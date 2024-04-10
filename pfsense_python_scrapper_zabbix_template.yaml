@@ -1,0 +1,193 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: cf39a7c038374c13813c5646c39e7736
+      name: DHCP
+  templates:
+    - uuid: 0558107a2c254de58aa48d4b8cfcf3df
+      template: 'DHCP lease Pfsense'
+      name: 'DHCP lease Pfsense'
+      groups:
+        - name: DHCP
+      items:
+        - uuid: 7ad921e6f61e4823b292cecbd2604d15
+          name: Capacity
+          type: DEPENDENT
+          key: dhcp.leases.capacity
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var lines = value.split('\n');
+                  var result = [];
+                  
+                  lines.forEach(function(line) {
+                    var match = line.match(/dhcp\.leases\.capacity\[(\w+)\]\s+(\d+)/);
+                    if (match) {
+                      var interface = match[1];
+                      var capacity = parseInt(match[2]);
+                      result.push({interface: interface, capacity: capacity});
+                    }
+                  });
+                  
+                  return JSON.stringify(result);
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: 7cc52622a83a43458e8a5b02a8e533ab
+          name: 'Used IPs'
+          type: DEPENDENT
+          key: dhcp.leases.ip_addresses
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'dhcp\.leases\.ip_addresses\s+(.*)'
+                - \1
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: f33d7237fae14275bfa6ab067e49a9dc
+          name: 'Pool End'
+          type: DEPENDENT
+          key: dhcp.leases.pool_end
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var lines = value.split('\n');
+                  var result = [];
+                  
+                  lines.forEach(function(line) {
+                    var match = line.match(/dhcp\.leases\.pool_end\[(\w+)\]\s+([\d.]+)/);
+                    if (match) {
+                      var interface = match[1];
+                      var poolEnd = match[2];
+                      result.push({interface: interface, poolEnd: poolEnd});
+                    }
+                  });
+                  
+                  return JSON.stringify(result);
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: 86c0b4a7afd0480588dfc83a96679524
+          name: 'Pool Start'
+          type: DEPENDENT
+          key: dhcp.leases.pool_start
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var lines = value.split('\n');
+                  var result = [];
+                  
+                  lines.forEach(function(line) {
+                    var match = line.match(/dhcp\.leases\.pool_start\[(\w+)\]\s+([\d.]+)/);
+                    if (match) {
+                      var interface = match[1];
+                      var poolStart = match[2];
+                      result.push({interface: interface, poolStart: poolStart});
+                    }
+                  });
+                  
+                  return JSON.stringify(result);
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: e4d24a2ec0654b74877aa782506dfb3a
+          name: 'Used Leases'
+          type: DEPENDENT
+          key: dhcp.leases.used
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var lines = value.split('\n');
+                  var result = [];
+                  
+                  lines.forEach(function(line) {
+                    var match = line.match(/dhcp\.leases\.used\[(\w+)\]\s+(\d+)/);
+                    if (match) {
+                      var interface = match[1];
+                      var used = parseInt(match[2]);
+                      result.push({interface: interface, used: used});
+                    }
+                  });
+                  
+                  return JSON.stringify(result);
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: 11446bb2947647c0a6ec0718f6a9e89b
+          name: 'Utilization in percent'
+          type: DEPENDENT
+          key: dhcp.leases.utilization.in.percent
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var lines = value.split('\n');
+                  var result = [];
+                  
+                  lines.forEach(function(line) {
+                    var match = line.match(/dhcp\.leases\.utilization\.in\.percent\[(\w+)\]\s+(\d+)/);
+                    if (match) {
+                      var interface = match[1];
+                      var percentage = parseInt(match[2]);
+                      result.push({interface: interface, percentage: percentage});
+                    }
+                  });
+                  
+                  return JSON.stringify(result);
+          master_item:
+            key: 'scrap.py[dhcp.leases]'
+        - uuid: 8c5601e0168742fd860195cfdd335742
+          name: 'Utilization in percent OPT2 RAW'
+          type: DEPENDENT
+          key: dhcp.leases.utilization.in.percent.value.raw
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.[?(@.interface=="OPT2")].percentage'
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var result = JSON.parse(value);
+                  return result[0];
+          master_item:
+            key: dhcp.leases.utilization.in.percent
+          triggers:
+            - uuid: 0824c28533164fd386e31b84276ad03c
+              expression: 'last(/DHCP lease Pfsense/dhcp.leases.utilization.in.percent.value.raw)>20'
+              name: 'High DHCP lease utilization on OP2'
+              priority: WARNING
+        - uuid: 7e72fa33d98644afa3a230ee4cd7187e
+          name: 'DHCP Lease Pfsense'
+          type: EXTERNAL
+          key: 'scrap.py[dhcp.leases]'
+          delay: 1440m
+          trends: '0'
+          value_type: TEXT
+  graphs:
+    - uuid: 30220ee7083144abae14891d62ffba0e
+      name: 'DHCP lease Pfsense: Utilization in percent OPT2 RAW'
+      graph_items:
+        - color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'DHCP lease Pfsense'
+            key: dhcp.leases.utilization.in.percent.value.raw
