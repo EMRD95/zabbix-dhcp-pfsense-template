@@ -5,7 +5,7 @@ As pfSense doesn't show DHCP lease infos in snmp, use of a python script to scra
 
 Tested of pfSense 2.7.2 and Zabbix 6.4.12
 
-Works with multiple interfaces. Manually adding triggers for the chosen interface necessary (just clone OPT2).
+Works with multiple interfaces. Manually adding triggers for the chosen interface necessary (just clone "Utilization in percent OPT2 RAW" and change the post processing values).
 
 /usr/lib/zabbix/externalscripts/scrap.py
 
