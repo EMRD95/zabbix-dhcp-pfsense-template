@@ -9,6 +9,17 @@ Works with multiple interfaces. Manually adding triggers for the chosen interfac
 
 /usr/lib/zabbix/externalscripts/scrap.py
 
+sudo chmod +x scrap.py
+
+sudo chown zabbix:zabbix scrap.py
+
+
+sudo apt install python3-pip
+pip3 install lxml
+or
+sudo pip3 install lxml
+python3 scrap.py
+
 ![image](https://github.com/EMRD95/zabbix-dhcp-pfsense-template/assets/114953576/c160e44a-776b-47eb-9502-477d5f9f0c41)
 
 ![image](https://github.com/EMRD95/zabbix-dhcp-pfsense-template/assets/114953576/bf413dc5-def8-4646-a0b2-48382e16aa06)
